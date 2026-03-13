@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            MY CALCULATOR   
+        </title>
+    </head>
+    <body>
+        <h1>CALCULATOR</h1>
+        <form method="post">
+            {% csrf_token %}
+
+            <input type="number" name="num1" placeholder="Enter first Number" required>
+            <input type="number" name="num2" placeholder="Enter second Number" required>
+
+            <button type="submit" name="action" value="addition">+</button>
+            <button type="submit" name="action" value="subtraction">-</button>
+            <button type="submit" name="action" value="multiplication">x</button>
+            <button type="submit" name="action" value="division">/</button>
+        </form>
+        {% if message %}
+        <p><strong>{{ message }}</p></strong>
+        {% endif %}
+
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">logout</button>
+        </form>
+    </body>
+</html>

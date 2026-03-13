@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: calculator-replica
+  labels:
+    app: calculator
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: calculator
+  template:
+      metadata:
+        labels:
+          app: calculator
+      spec:
+        containers:
+        - name: calculator
+          image: sunilkumar24/calculator_app:latest

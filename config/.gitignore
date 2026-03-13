@@ -1,0 +1,24 @@
+# Python environment
+env/
+venv/
+ENV/
+.env
+
+# Django specific
+db.sqlite3
+*.log
+local_settings.py
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS-specific (especially for your MacBook)
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Docker
+.dockerignore
+# (Optional: some people push Dockerfiles but ignore local data volumes)

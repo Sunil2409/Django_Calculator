@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            logout Page
+        </title>
+    </head>
+    <body>
+        <h1>You are at logout Page</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button type="submit">Log Out</button>
+        </form>
+        <p>Log in <a href="{% url 'login' %}">Login Here</a></p>
+    </body>
+</html>
