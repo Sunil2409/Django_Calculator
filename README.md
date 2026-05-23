@@ -1,170 +1,159 @@
-# 🧮 Django Calculator — Production-Grade
+# 🧮 Django Calculator — Production-Grade Web Application
 
-A full-stack Django web application with user authentication, calculation history, and a complete DevOps pipeline. Containerized with Docker, orchestrated with Kubernetes, and CI/CD automated via GitHub Actions.
+[![CI/CD Pipeline](https://github.com/Sunil2409/Django_Calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/Sunil2409/Django_Calculator/actions)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Django 6.0](https://img.shields.io/badge/Django-6.0-green.svg)](https://www.djangoproject.com/)
+[![Code Coverage](https://img.shields.io/badge/Coverage-99%25-brightgreen.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**🔴 Live Demo:** [https://django-calculator-xxxx.onrender.com](https://django-calculator-xxxx.onrender.com) *(update after deploy)*
+> A production-grade Django web application featuring user authentication, persistent calculation history, and a full DevOps pipeline — deployed live on Render with PostgreSQL.
+
+### 🔴 Live Demo: [django-calculator-1.onrender.com](https://django-calculator-1.onrender.com)
 
 ---
 
-## Architecture
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   GitHub Actions CI/CD                   │
-│  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
-│  │  Lint     │→ │  Test + Cov  │→ │  Docker Build +   │  │
-│  │  (flake8) │  │  (PostgreSQL)│  │  Smoke Test       │  │
-│  └──────────┘  └──────────────┘  └───────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│              Render / Docker / Kubernetes                 │
-│                                                          │
-│  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
-│  │ Django   │→ │  PostgreSQL  │  │  Redis (Cache)    │  │
-│  │ Gunicorn │  │              │  │                   │  │
-│  └──────────┘  └──────────────┘  └───────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+                        ┌──────────────────────────────┐
+                        │       GitHub Repository       │
+                        └──────────────┬───────────────┘
+                                       │ push / PR
+                        ┌──────────────▼───────────────┐
+                        │     GitHub Actions CI/CD      │
+                        │                               │
+                        │  ┌─────────┐  ┌───────────┐  │
+                        │  │  Lint   │→ │  Test +   │  │
+                        │  │ flake8  │  │  Coverage  │  │
+                        │  └─────────┘  └─────┬─────┘  │
+                        │                     │        │
+                        │              ┌──────▼──────┐ │
+                        │              │ Docker Build │ │
+                        │              │ Smoke Test   │ │
+                        │              └─────────────┘ │
+                        └──────────────┬───────────────┘
+                                       │ deploy
+               ┌───────────────────────▼────────────────────────┐
+               │                Render Platform                  │
+               │                                                 │
+               │  ┌──────────┐  ┌────────────┐  ┌────────────┐  │
+               │  │  Django  │  │ PostgreSQL │  │   Redis    │  │
+               │  │ Gunicorn │──│   (Prod)   │  │  (Cache)   │  │
+               │  │  :8000   │  │            │  │            │  │
+               │  └──────────┘  └────────────┘  └────────────┘  │
+               └─────────────────────────────────────────────────┘
 ```
 
-## Features
+## ✨ Key Features
 
-- **User Authentication** — Signup, login, logout with Django's auth system
-- **Calculator** — Add, subtract, multiply, divide with input validation
-- **Calculation History** — Persisted per-user with timestamps
-- **Health Check** — `/health/` endpoint for container orchestration probes
-- **Structured Logging** — Console + file output with configurable levels
-- **35+ Unit & Integration Tests** — 99% code coverage enforced in CI
+| Feature | Description |
+|---------|-------------|
+| **User Authentication** | Signup, login, logout with Django's built-in auth + session management |
+| **Calculator Engine** | Add, subtract, multiply, divide with input validation and error handling |
+| **Calculation History** | Per-user persistent history with timestamps (PostgreSQL-backed) |
+| **Health Check API** | `/health/` endpoint for container orchestration and uptime monitoring |
+| **Structured Logging** | Console + file logging with configurable levels per module |
+| **99% Test Coverage** | 38 unit & integration tests enforced at 80%+ in CI |
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer          | Technology                           |
-|----------------|--------------------------------------|
-| Backend        | Django 6.0, Python 3.12              |
-| WSGI Server    | Gunicorn (3 workers)                 |
-| Database       | PostgreSQL 16 (prod) / SQLite (dev)  |
-| Caching        | Redis 7                              |
-| Static Files   | WhiteNoise                           |
-| Containerization | Docker (multi-stage), Docker Compose |
-| Orchestration  | Kubernetes (Deployment, Service, ReplicaSet) |
-| CI/CD          | GitHub Actions                       |
-| Hosting        | Render (Web Service + PostgreSQL)    |
-| Code Quality   | flake8, coverage                     |
-
----
-
-## 🚀 Deploy to Render (Production)
-
-### Option A: One-Click Blueprint Deploy
-
-1. Fork this repository
-2. Go to [https://render.com/deploy](https://render.com/deploy)
-3. Connect your GitHub account and select this repo
-4. Render reads `render.yaml` and auto-creates:
-   - A **Web Service** (Django + Gunicorn)
-   - A **PostgreSQL database** (free tier)
-5. Click **Apply** — your app will be live in ~3 minutes
-
-### Option B: Manual Setup (Step-by-Step)
-
-#### Step 1 — Create a PostgreSQL Database
-
-1. Go to [Render Dashboard](https://dashboard.render.com/) → **New** → **PostgreSQL**
-2. Fill in:
-   - **Name:** `calculator-db`
-   - **Database:** `calculator_db`
-   - **User:** `calculator_user`
-   - **Plan:** Free
-3. Click **Create Database**
-4. Copy the **Internal Database URL** (you'll need it in Step 2)
-
-#### Step 2 — Create a Web Service
-
-1. Go to **New** → **Web Service** → Connect your GitHub repo
-2. Configure:
-
-| Setting | Value |
-|---------|-------|
-| **Name** | `django-calculator` |
-| **Root Directory** | `config` |
-| **Runtime** | Python |
-| **Build Command** | `./build.sh` |
-| **Start Command** | `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
-| **Plan** | Free |
-
-3. Add **Environment Variables**:
-
-| Key | Value |
-|-----|-------|
-| `SECRET_KEY` | *(click "Generate" to create a random key)* |
-| `DEBUG` | `False` |
-| `ALLOWED_HOSTS` | `.onrender.com` |
-| `DATABASE_URL` | *(paste the Internal Database URL from Step 1)* |
-| `PYTHON_VERSION` | `3.12.0` |
-
-4. Click **Create Web Service** — Render will run `build.sh`, install deps, migrate the DB, and start Gunicorn.
-
-#### Step 3 — Create a Superuser (Optional)
-
-1. Go to your Web Service → **Shell** tab
-2. Run:
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-#### Step 4 — Verify
-
-- Visit `https://your-app-name.onrender.com/` → Login page
-- Visit `https://your-app-name.onrender.com/health/` → `{"status": "healthy"}`
-- Visit `https://your-app-name.onrender.com/admin/` → Django admin
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Backend** | Django 6.0, Python 3.12 | Web framework & business logic |
+| **WSGI Server** | Gunicorn (multi-worker) | Production-grade HTTP server |
+| **Database** | PostgreSQL 16 / SQLite | Persistent storage (prod / dev) |
+| **Caching** | Redis 7 | Response & query caching |
+| **Static Files** | WhiteNoise | Compressed static file serving |
+| **Containerization** | Docker (multi-stage) | Reproducible builds, non-root user |
+| **Orchestration** | Docker Compose, Kubernetes | Multi-container & cluster deployment |
+| **CI/CD** | GitHub Actions | Automated lint, test, build pipeline |
+| **Hosting** | Render | Live deployment with managed PostgreSQL |
+| **Code Quality** | flake8, coverage | Linting & test coverage enforcement |
 
 ---
 
-## 💻 Local Development
+## 🚀 Quick Start
+
+### Local Development (2 minutes)
 
 ```bash
-# Clone
 git clone https://github.com/Sunil2409/Django_Calculator.git
 cd Django_Calculator/config
-
-# Virtual environment
 python -m venv env && source env/bin/activate
-
-# Install & run
 pip install -r requirements.txt
-cp .env.example .env          # Edit with your values
+cp .env.example .env
 python manage.py migrate
 python manage.py runserver
 ```
+→ Open **http://127.0.0.1:8000**
 
-Open **http://127.0.0.1:8000/**
-
-### Docker Compose (Local Multi-Container)
+### Docker Compose (PostgreSQL + Redis)
 
 ```bash
-cd config
+cd Django_Calculator/config
 cp .env.example .env
 docker compose up --build
 ```
+→ Starts Django + PostgreSQL + Redis at **http://localhost:8000**
 
-Starts Django + PostgreSQL + Redis at **http://localhost:8000**
+### Kubernetes
+
+```bash
+kubectl apply -f calculator-deploy.yaml
+kubectl apply -f calculator-service.yaml
+minikube service calculator-service
+```
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Testing & Code Quality
 
 ```bash
-cd config
-source ../env/bin/activate
-
 # Run all 38 tests
 python manage.py test calculator_app -v 2
 
-# With coverage report
+# Run with coverage (99% coverage)
 coverage run manage.py test calculator_app
-coverage report    # 99% coverage
+coverage report
+
+# Lint
+flake8 calculator_app/ --max-line-length=120 --exclude=migrations
 ```
+
+| Metric | Value |
+|--------|-------|
+| Total Tests | 38 |
+| Test Classes | 7 (Operations, Auth, Views, History, Health) |
+| Code Coverage | **99%** |
+| Lint Warnings | 0 |
+
+---
+
+## ☁️ Production Deployment (Render)
+
+### One-Click Deploy
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Sunil2409/Django_Calculator)
+
+### Manual Setup
+
+1. **Create PostgreSQL** → Render Dashboard → New → PostgreSQL (Free)
+2. **Create Web Service** → Connect GitHub repo with these settings:
+
+| Setting | Value |
+|---------|-------|
+| **Build Command** | `cd config && ./build.sh` |
+| **Start Command** | `cd config && python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
+
+3. **Environment Variables:**
+
+| Key | Value |
+|-----|-------|
+| `SECRET_KEY` | *(Generate)* |
+| `DEBUG` | `False` |
+| `ALLOWED_HOSTS` | `.onrender.com` |
+| `DATABASE_URL` | *(PostgreSQL Internal URL)* |
+| `PYTHON_VERSION` | `3.12.0` |
 
 ---
 
@@ -172,37 +161,62 @@ coverage report    # 99% coverage
 
 ```
 Django_Calculator/
-├── .github/workflows/ci.yml       # CI/CD: lint → test → docker build
+├── .github/
+│   └── workflows/ci.yml           # CI/CD: lint → test → docker smoke test
 ├── render.yaml                     # Render Blueprint (one-click deploy)
-├── calculator-deploy.yaml          # K8s Deployment (health probes + limits)
-├── calculator-service.yaml         # K8s NodePort Service
+├── calculator-deploy.yaml          # K8s: 3 replicas, health probes, resource limits
+├── calculator-service.yaml         # K8s: NodePort service
+│
 ├── config/                         # Django project root
 │   ├── calculator_app/
-│   │   ├── models.py               # CalculationHistory model
-│   │   ├── operations.py           # Pure arithmetic + custom exceptions
-│   │   ├── views.py                # Auth-protected views + logging
+│   │   ├── models.py               # CalculationHistory model (FK → User)
+│   │   ├── operations.py           # Pure functions + custom exceptions + logging
+│   │   ├── views.py                # @login_required views + DRY dispatch map
 │   │   ├── tests.py                # 38 tests across 7 test classes
+│   │   ├── admin.py                # Admin with list_display, filters, search
 │   │   └── templates/
-│   ├── config/settings.py          # Env-driven (decouple + dj-database-url)
-│   ├── build.sh                    # Render build script
-│   ├── Dockerfile                  # Multi-stage + Gunicorn + non-root user
+│   │
+│   ├── config/
+│   │   ├── settings.py             # Env-driven (decouple + dj-database-url)
+│   │   ├── wsgi.py                 # Gunicorn entry point
+│   │   └── urls.py
+│   │
+│   ├── build.sh                    # Render build: pip, collectstatic, migrate
+│   ├── Dockerfile                  # Multi-stage, non-root user, HEALTHCHECK
 │   ├── docker-compose.yml          # Django + PostgreSQL + Redis
-│   ├── requirements.txt
-│   └── .env.example                # Documented env vars
+│   ├── requirements.txt            # Pinned production dependencies
+│   └── .env.example                # Documented environment variables
+│
 └── README.md
 ```
 
-## Environment Variables
+## 🔐 Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SECRET_KEY` | `change-me-in-production` | Django secret key |
-| `DEBUG` | `False` | Debug mode toggle |
-| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames |
-| `DATABASE_URL` | `sqlite:///db.sqlite3` | Database connection string |
-| `REDIS_URL` | *(empty — cache disabled)* | Redis connection string |
-| `RENDER_EXTERNAL_HOSTNAME` | *(auto-set by Render)* | Render hostname |
+| `SECRET_KEY` | `change-me-in-production` | Django cryptographic key |
+| `DEBUG` | `False` | Debug mode (never `True` in prod) |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated allowed hostnames |
+| `DATABASE_URL` | `sqlite:///db.sqlite3` | Database connection URI |
+| `REDIS_URL` | *(empty)* | Redis cache URI (optional) |
+| `RENDER_EXTERNAL_HOSTNAME` | *(auto-set)* | Render's assigned hostname |
 
-## License
+## 🔒 Security Considerations
 
-MIT
+- ✅ Secret key externalized via environment variables (never committed)
+- ✅ `DEBUG=False` enforced in production
+- ✅ Non-root Docker user (`django:django`)
+- ✅ CSRF protection on all forms
+- ✅ `@login_required` on protected views
+- ✅ Password validation (4 validators)
+- ✅ WhiteNoise for secure static file serving
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE) for details.
+
+## 👤 Author
+
+**Sunil Kumar E** — [GitHub](https://github.com/Sunil2409)
