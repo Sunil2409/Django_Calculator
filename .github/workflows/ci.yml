@@ -1,0 +1,91 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Job 1: Lint & Test ─────────────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./config
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ci-test-secret-key-not-for-production
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgres://test_user:test_pass@localhost:5432/test_db
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: config/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: flake8 calculator_app/ --max-line-length=120 --exclude=migrations
+
+      - name: Run migrations
+        run: python manage.py migrate --noinput
+
+      - name: Run tests with coverage
+        run: |
+          coverage run manage.py test calculator_app -v 2
+          coverage report --fail-under=80
+          coverage xml
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: config/coverage.xml
+
+  # ── Job 2: Docker Build & Smoke Test ───────────────────────────────────────
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t django-calculator ./config
+
+      - name: Run container smoke test
+        run: |
+          docker run -d -p 8000:8000 \
+            -e SECRET_KEY=smoke-test-key \
+            -e DEBUG=True \
+            -e ALLOWED_HOSTS="*" \
+            --name calc-test django-calculator
+          sleep 5
+          curl -f http://localhost:8000/health/ || exit 1
+          docker stop calc-test

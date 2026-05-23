@@ -1,137 +1,124 @@
-# Django Calculator
+# 🧮 Django Calculator — Production-Grade
 
-A simple web-based calculator application built with Django. This project demonstrates basic arithmetic operations through a user-friendly web interface.
+A full-stack Django web application with user authentication, calculation history, and a complete DevOps pipeline. Containerized with Docker, orchestrated with Kubernetes, and CI/CD automated via GitHub Actions.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   GitHub Actions CI/CD                   │
+│  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
+│  │  Lint     │→ │  Test + Cov  │→ │  Docker Build +   │  │
+│  │  (flake8) │  │  (PostgreSQL)│  │  Smoke Test       │  │
+│  └──────────┘  └──────────────┘  └───────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                Docker Compose / Kubernetes               │
+│                                                          │
+│  ┌──────────┐  ┌──────────────┐  ┌───────────────────┐  │
+│  │ Django   │→ │  PostgreSQL  │  │  Redis (Cache)    │  │
+│  │ Gunicorn │  │              │  │                   │  │
+│  └──────────┘  └──────────────┘  └───────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
 
 ## Features
 
-- User authentication (login, signup, logout)
-- Basic calculator operations (addition, subtraction, multiplication, division)
-- Responsive web interface using Django templates
-- Containerized deployment with Docker
-- Kubernetes orchestration for scalable deployment
+- **User Authentication** — Signup, login, logout with Django's auth system
+- **Calculator** — Add, subtract, multiply, divide with input validation
+- **Calculation History** — Persisted per-user with timestamps
+- **Health Check** — `/health/` endpoint for container orchestration probes
+- **Structured Logging** — Console + file output with configurable levels
+- **35+ Unit & Integration Tests** — 80%+ code coverage enforced in CI
 
-## Prerequisites
+## Tech Stack
 
-Before running this project, ensure you have the following installed:
+| Layer          | Technology                           |
+|----------------|--------------------------------------|
+| Backend        | Django 6.0, Python 3.12              |
+| WSGI Server    | Gunicorn (3 workers)                 |
+| Database       | PostgreSQL 16 (prod) / SQLite (dev)  |
+| Caching        | Redis 7                              |
+| Static Files   | WhiteNoise                           |
+| Containerization | Docker (multi-stage), Docker Compose |
+| Orchestration  | Kubernetes (Deployment, Service, ReplicaSet) |
+| CI/CD          | GitHub Actions                       |
+| Code Quality   | flake8, coverage                     |
 
-- Python 3.8 or higher
-- pip (Python package manager)
-- Virtualenv (recommended for Python environment management)
-- Docker (for containerized deployment)
-- Kubernetes cluster (e.g., Minikube for local development) and kubectl
+## Quick Start
+
+### Local Development
+
+```bash
+cd config
+python -m venv env && source env/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # Edit with your values
+python manage.py migrate
+python manage.py runserver
+```
+
+### Docker Compose (Recommended)
+
+```bash
+cd config
+cp .env.example .env
+docker compose up --build
+```
+
+Access at `http://localhost:8000`. The stack includes Django + PostgreSQL + Redis.
+
+### Kubernetes
+
+```bash
+kubectl apply -f calculator-deploy.yaml
+kubectl apply -f calculator-service.yaml
+kubectl get pods
+```
+
+## Running Tests
+
+```bash
+cd config
+python manage.py test calculator_app -v 2
+
+# With coverage report
+coverage run manage.py test calculator_app
+coverage report
+```
 
 ## Project Structure
 
 ```
 calculator/
-├── config/                    # Django project configuration
-│   ├── Dockerfile            # Docker configuration
-│   ├── manage.py             # Django management script
-│   ├── requirements.txt      # Python dependencies
-│   ├── settings.py           # Django settings
-│   └── urls.py               # URL configuration
-├── calculator_app/           # Main Django app
-│   ├── models.py             # Database models
-│   ├── views.py              # View functions
-│   ├── templates/            # HTML templates
-│   └── static/               # Static files (if any)
-├── env/                      # Python virtual environment
-├── calculator-deploy.yaml    # Kubernetes deployment
-├── calculator-pod.yaml       # Kubernetes pod specification
-├── calculator-replica.yaml   # Kubernetes replica set
-└── calculator-service.yaml   # Kubernetes service
+├── .github/workflows/ci.yml       # CI/CD pipeline
+├── config/                         # Django project root
+│   ├── calculator_app/
+│   │   ├── models.py               # CalculationHistory model
+│   │   ├── operations.py           # Pure arithmetic functions
+│   │   ├── views.py                # Views with auth + logging
+│   │   ├── tests.py                # 35+ tests
+│   │   └── templates/
+│   ├── config/settings.py          # Env-driven settings
+│   ├── Dockerfile                  # Multi-stage + Gunicorn
+│   ├── docker-compose.yml          # Django + PostgreSQL + Redis
+│   └── .env.example                # Documented env vars
+├── calculator-deploy.yaml          # K8s with health probes
+└── calculator-service.yaml         # K8s NodePort service
 ```
 
-## Running the Django Application Locally
+## Environment Variables
 
-1. **Clone or navigate to the project directory:**
-   ```
-   cd /Users/sunilkumare/Desktop/Code/DJANGO/calculator
-   ```
-
-2. **Activate the virtual environment:**
-   ```
-   source env/bin/activate
-   ```
-
-3. **Install dependencies:**
-   ```
-   pip install -r config/requirements.txt
-   ```
-
-4. **Run database migrations (if needed):**
-   ```
-   cd config
-   python manage.py migrate
-   ```
-
-5. **Start the Django development server:**
-   ```
-   python manage.py runserver
-   ```
-
-6. **Access the application:**
-   Open your web browser and go to `http://127.0.0.1:8000/`
-
-## Running with Docker
-
-1. **Navigate to the config directory:**
-   ```
-   cd config
-   ```
-
-2. **Build the Docker image:**
-   ```
-   docker build -t django-calculator .
-   ```
-
-3. **Run the Docker container:**
-   ```
-   docker run -p 8000:8000 django-calculator
-   ```
-
-4. **Access the application:**
-   Open your web browser and go to `http://localhost:8000/`
-
-## Deploying with Kubernetes
-
-1. **Ensure you have a Kubernetes cluster running (e.g., Minikube):**
-   ```
-   minikube start
-   ```
-
-2. **Apply the Kubernetes manifests:**
-   ```
-   kubectl apply -f calculator-deploy.yaml
-   kubectl apply -f calculator-pod.yaml
-   kubectl apply -f calculator-replica.yaml
-   kubectl apply -f calculator-service.yaml
-   ```
-
-3. **Check the deployment status:**
-   ```
-   kubectl get pods
-   kubectl get services
-   ```
-
-4. **Access the application:**
-   - For Minikube: `minikube service calculator-service`
-   - Or get the service IP: `kubectl get service calculator-service`
-
-## Usage
-
-1. Register a new account or login with existing credentials.
-2. Use the calculator interface to perform arithmetic operations.
-3. Logout when done.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+| Variable        | Default                    | Description                |
+|-----------------|----------------------------|----------------------------|
+| `SECRET_KEY`    | `change-me-in-production`  | Django secret key          |
+| `DEBUG`         | `False`                    | Debug mode toggle          |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1`      | Comma-separated hostnames  |
+| `DATABASE_URL`  | `sqlite:///db.sqlite3`     | Database connection string |
+| `REDIS_URL`     | *(empty — cache disabled)* | Redis connection string    |
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT

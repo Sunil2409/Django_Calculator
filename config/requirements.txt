@@ -1,3 +1,21 @@
-asgiref==3.11.0
+# Core
 Django==6.0.1
+asgiref==3.11.0
 sqlparse==0.5.5
+
+# Production server
+gunicorn==23.0.0
+
+# Configuration
+python-decouple==3.8
+dj-database-url==2.3.0
+
+# Database (PostgreSQL for production)
+psycopg2-binary==2.9.10
+
+# Static files serving
+whitenoise==6.8.2
+
+# Testing & Code Quality
+coverage==7.6.10
+flake8==7.1.1

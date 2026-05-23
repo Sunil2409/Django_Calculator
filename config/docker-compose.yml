@@ -1,0 +1,52 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Docker Compose: Django + PostgreSQL + Redis
+#
+# Usage:
+#   docker compose up --build        # Start all services
+#   docker compose down -v           # Stop and remove volumes
+#   docker compose exec web python manage.py createsuperuser
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: calculator_db
+      POSTGRES_USER: calculator_user
+      POSTGRES_PASSWORD: calculator_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U calculator_user -d calculator_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://calculator_user:calculator_pass@db:5432/calculator_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile -"
+
+volumes:
+  postgres_data:

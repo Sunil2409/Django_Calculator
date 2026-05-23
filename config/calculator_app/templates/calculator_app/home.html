@@ -1,30 +1,55 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>
-            MY CALCULATOR   
-        </title>
+        <title>My Calculator</title>
     </head>
     <body>
         <h1>CALCULATOR</h1>
+
+        {% if messages %}
+        <ul>
+            {% for msg in messages %}
+            <li>{{ msg }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
-
-            <input type="number" name="num1" placeholder="Enter first Number" required>
-            <input type="number" name="num2" placeholder="Enter second Number" required>
+            <input type="number" name="num1" step="any" placeholder="Enter first number" required>
+            <input type="number" name="num2" step="any" placeholder="Enter second number" required>
 
             <button type="submit" name="action" value="addition">+</button>
             <button type="submit" name="action" value="subtraction">-</button>
             <button type="submit" name="action" value="multiplication">x</button>
             <button type="submit" name="action" value="division">/</button>
         </form>
+
         {% if message %}
-        <p><strong>{{ message }}</p></strong>
+        <p><strong>{{ message }}</strong></p>
+        {% endif %}
+
+        {% if history %}
+        <h2>Recent Calculations</h2>
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Expression</th>
+                <th>Result</th>
+                <th>Date</th>
+            </tr>
+            {% for calc in history %}
+            <tr>
+                <td>{{ calc.num1 }} {{ calc.operation }} {{ calc.num2 }}</td>
+                <td>{{ calc.result }}</td>
+                <td>{{ calc.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
         {% endif %}
 
         <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
-            <button type="submit">logout</button>
+            <button type="submit">Logout</button>
         </form>
     </body>
 </html>

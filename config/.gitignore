@@ -8,17 +8,29 @@ ENV/
 db.sqlite3
 *.log
 local_settings.py
+staticfiles/
+logs/
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# OS-specific (especially for your MacBook)
+# OS-specific
 .DS_Store
 .AppleDouble
 .LSOverride
 
 # Docker
 .dockerignore
-# (Optional: some people push Dockerfiles but ignore local data volumes)
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
