@@ -1,0 +1,32 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Render Blueprint — Infrastructure as Code
+# Deploy with: https://render.com/deploy → connect your GitHub repo
+# ──────────────────────────────────────────────────────────────────────────────
+
+databases:
+  - name: calculator-db
+    plan: free
+    databaseName: calculator_db
+    user: calculator_user
+
+services:
+  - type: web
+    name: django-calculator
+    runtime: python
+    plan: free
+    rootDir: config
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: calculator-db
+          property: connectionURI
+      - key: PYTHON_VERSION
+        value: "3.12.0"

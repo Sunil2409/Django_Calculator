@@ -19,6 +19,11 @@ SECRET_KEY = config("SECRET_KEY", default="change-me-in-production")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 
+# Render sets this env var automatically — append it so Django accepts requests
+RENDER_EXTERNAL_HOSTNAME = config("RENDER_EXTERNAL_HOSTNAME", default="")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 
 # ─── Application definition ─────────────────────────────────────────────────
 
